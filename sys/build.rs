@@ -260,24 +260,27 @@ fn main() {
 
     add_link_search_path(&out.join("build")).unwrap();
 
+    let is_system_ggml = env::var("WHISPER_USE_SYSTEM_GGML").is_ok_and(|v| v == "1");
+    let link_type = if is_system_ggml { "dylib" } else { "static" };
+
     println!("cargo:rustc-link-search=native={}", destination.display());
     println!("cargo:rustc-link-lib=static=whisper");
-    println!("cargo:rustc-link-lib=static=ggml");
-    println!("cargo:rustc-link-lib=static=ggml-base");
-    println!("cargo:rustc-link-lib=static=ggml-cpu");
+    println!("cargo:rustc-link-lib={}=ggml", link_type);
+    println!("cargo:rustc-link-lib={}=ggml-base", link_type);
+    println!("cargo:rustc-link-lib={}=ggml-cpu", link_type);
     if cfg!(target_os = "macos") || cfg!(feature = "openblas") {
-        println!("cargo:rustc-link-lib=static=ggml-blas");
+        println!("cargo:rustc-link-lib={}=ggml-blas", link_type);
     }
     if cfg!(feature = "vulkan") {
-        println!("cargo:rustc-link-lib=static=ggml-vulkan");
+        println!("cargo:rustc-link-lib={}=ggml-vulkan", link_type);
     }
 
     if cfg!(feature = "metal") {
-        println!("cargo:rustc-link-lib=static=ggml-metal");
+        println!("cargo:rustc-link-lib={}=ggml-metal", link_type);
     }
 
     if cfg!(feature = "cuda") {
-        println!("cargo:rustc-link-lib=static=ggml-cuda");
+        println!("cargo:rustc-link-lib={}=ggml-cuda", link_type);
     }
 
     println!(
